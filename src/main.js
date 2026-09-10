@@ -1,6 +1,8 @@
 import "./style.css";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Capacitor } from "@capacitor/core";
+import { BackgroundGeolocation } from "@capgo/background-geolocation";
 
 document.querySelector("#app").innerHTML = `
   <div class="app">
@@ -378,6 +380,7 @@ let driving = false;
 let startTime = null;
 let timer = null;
 let watchId = null;
+let nativeLocationActive = false;
 
 let lastPosition = null;
 
@@ -1438,21 +1441,91 @@ function startDrive() {
       1000
     );
 
-  watchId =
-    navigator.geolocation.watchPosition(
-      handlePosition,
-      handleLocationError,
+    if (
+    Capacitor.isNativePlatform()
+  ) {
+    nativeLocationActive =
+      true;
+
+    BackgroundGeolocation.start(
       {
-        enableHighAccuracy:
+        backgroundMessage:
+          "Drive Tracker is recording your location.",
+
+        backgroundTitle:
+          "Drive Tracker",
+
+        requestPermissions:
           true,
 
-        maximumAge:
-          1000,
+        stale:
+          false,
 
-        timeout:
-          10000,
+        distanceFilter:
+          0,
+      },
+      (
+        location,
+        error
+      ) => {
+        if (error) {
+          console.error(
+            "Background GPS error:",
+            error
+          );
+
+          handleLocationError({
+            code: 2,
+            message:
+              error.message ||
+              "Background GPS error",
+          });
+
+          return;
+        }
+
+        if (!location) {
+          return;
+        }
+
+        handlePosition({
+          coords: {
+            latitude:
+              location.latitude,
+
+            longitude:
+              location.longitude,
+
+            accuracy:
+              location.accuracy,
+
+            speed:
+              location.speed,
+          },
+
+          timestamp:
+            location.time ||
+            Date.now(),
+        });
       }
     );
+  } else {
+    watchId =
+      navigator.geolocation.watchPosition(
+        handlePosition,
+        handleLocationError,
+        {
+          enableHighAccuracy:
+            true,
+
+          maximumAge:
+            1000,
+
+          timeout:
+            10000,
+        }
+      );
+  }
 }
 
 /* =========================================================
@@ -1929,7 +2002,7 @@ function handleLocationError(
    STOP DRIVE
    ========================================================= */
 
-function stopDrive() {
+async function stopDrive() {
   if (
     !driving
   ) {
@@ -1974,9 +2047,17 @@ function stopDrive() {
       null;
   }
 
+    if (
+    nativeLocationActive
+  ) {
+    await BackgroundGeolocation.stop();
+
+    nativeLocationActive =
+      false;
+  }
+
   if (
-    watchId !==
-    null
+    watchId !== null
   ) {
     navigator.geolocation.clearWatch(
       watchId

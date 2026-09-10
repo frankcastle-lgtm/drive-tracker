@@ -66,5 +66,13 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Drive Tracker needs your location to record your drives.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Drive Tracker needs your location while your device is locked to continue recording your drive.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 </dict>
 </plist>
