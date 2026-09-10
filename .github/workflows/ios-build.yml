@@ -36,6 +36,18 @@ jobs:
             -scheme App \
             -sdk iphoneos \
             -configuration Debug \
+            -derivedDataPath ios/App/build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             build
+      - name: Package unsigned IPA
+        run: |
+          mkdir -p Payload
+          cp -R ios/App/build/Build/Products/Debug-iphoneos/App.app Payload/App.app
+          zip -r DriveTracker.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: DriveTracker-IPA
+          path: DriveTracker.ipa
