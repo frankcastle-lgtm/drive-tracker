@@ -1,0 +1,1746 @@
+/* ============================================================
+   DRIVE TRACKER — COMPLETE STYLESHEET
+   ============================================================ */
+
+:root {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Segoe UI",
+    sans-serif;
+
+  color: #f5f5f7;
+  background: #000;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  --background: #000;
+  --surface: #111113;
+  --surface-2: #18181b;
+  --surface-3: #202023;
+
+  --text: #f5f5f7;
+  --secondary-text: #98989f;
+  --muted-text: #6e6e73;
+
+  --border: rgba(255, 255, 255, 0.08);
+
+  --green: #30d158;
+  --blue: #0a84ff;
+  --orange: #ff9f0a;
+  --red: #ff453a;
+
+  --bottom-nav-height: 76px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #000;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(48, 209, 88, 0.045),
+      transparent 34%
+    ),
+    #000;
+
+  color: var(--text);
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.fullscreen-map-open {
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+
+  padding-bottom:
+    calc(
+      var(--bottom-nav-height) +
+      env(safe-area-inset-bottom) +
+      18px
+    );
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.header {
+  width: 100%;
+  max-width: 760px;
+
+  margin: 0 auto;
+
+  padding:
+    calc(
+      18px +
+      env(safe-area-inset-top)
+    )
+    20px
+    10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  margin: 0 0 3px;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+
+  color: var(--muted-text);
+}
+
+.header h1 {
+  margin: 0;
+
+  font-size: 27px;
+  line-height: 1.1;
+  font-weight: 700;
+
+  letter-spacing: -0.035em;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: #3a3a3c;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(255, 255, 255, 0.025);
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.status-dot.active {
+  background: var(--green);
+
+  box-shadow:
+    0 0 0 4px
+      rgba(48, 209, 88, 0.12),
+    0 0 16px
+      rgba(48, 209, 88, 0.4);
+}
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+
+main {
+  width: 100%;
+}
+
+.page {
+  width: 100%;
+  max-width: 760px;
+
+  margin: 0 auto;
+
+  padding:
+    8px 16px
+    24px;
+}
+
+.page[hidden] {
+  display: none !important;
+}
+
+/* ============================================================
+   HERO / CURRENT SPEED
+   ============================================================ */
+
+.hero-card {
+  position: relative;
+
+  padding:
+    27px 20px
+    22px;
+
+  border: 1px solid var(--border);
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.018)
+    );
+
+  box-shadow:
+    0 18px 50px
+      rgba(0, 0, 0, 0.25);
+
+  text-align: center;
+
+  overflow: hidden;
+}
+
+.hero-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: -130px;
+  left: 50%;
+
+  width: 300px;
+  height: 250px;
+
+  transform: translateX(-50%);
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(48, 209, 88, 0.08),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+.hero-label {
+  position: relative;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+
+  color: var(--secondary-text);
+}
+
+.speed {
+  position: relative;
+
+  margin-top: 4px;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+
+  gap: 7px;
+}
+
+.speed > span:first-child {
+  font-size: 76px;
+  line-height: 0.98;
+
+  font-weight: 700;
+
+  letter-spacing: -0.065em;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.speed-unit {
+  font-size: 17px;
+  font-weight: 600;
+
+  color: var(--secondary-text);
+}
+
+.drive-state {
+  margin-top: 5px;
+
+  min-height: 20px;
+
+  color: var(--secondary-text);
+
+  font-size: 13px;
+}
+
+.start-button {
+  width: 100%;
+
+  max-width: 330px;
+
+  margin-top: 18px;
+
+  min-height: 50px;
+
+  border: 0;
+  border-radius: 15px;
+
+  background: var(--green);
+  color: #000;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  letter-spacing: 0.025em;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+
+.start-button:active {
+  transform: scale(0.98);
+}
+
+.start-button:hover {
+  filter: brightness(1.05);
+}
+
+.start-button.stop {
+  background: var(--red);
+  color: #fff;
+}
+
+.gps-message {
+  min-height: 17px;
+
+  margin:
+    10px 0 0;
+
+  color: var(--muted-text);
+
+  font-size: 11px;
+}
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+.stat-card {
+  min-width: 0;
+
+  padding:
+    14px 14px
+    15px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 16px;
+
+  background:
+    rgba(255, 255, 255, 0.045);
+}
+
+.stat-card span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--secondary-text);
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.stat-card strong {
+  display: block;
+
+  color: var(--text);
+
+  font-size: 18px;
+  font-weight: 650;
+
+  line-height: 1.2;
+
+  font-variant-numeric: tabular-nums;
+
+  overflow-wrap: anywhere;
+}
+
+/* ============================================================
+   MAP SECTION
+   ============================================================ */
+
+.map-section {
+  margin-top: 18px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 9px;
+}
+
+.section-heading h2 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  letter-spacing: -0.02em;
+}
+
+.section-heading > span {
+  color: var(--muted-text);
+
+  font-size: 11px;
+}
+
+#map {
+  width: 100%;
+  height: 310px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  background: #171719;
+
+  box-shadow:
+    0 12px 35px
+      rgba(0, 0, 0, 0.22);
+}
+
+.leaflet-container {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "Segoe UI",
+    sans-serif;
+
+  background: #171719;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px !important;
+
+  background:
+    rgba(0, 0, 0, 0.55) !important;
+
+  color:
+    rgba(255, 255, 255, 0.6) !important;
+}
+
+.leaflet-control-attribution a {
+  color:
+    rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ============================================================
+   MAP LOCATION BUTTON
+   ============================================================ */
+
+.map-location-button {
+  width: 42px;
+  height: 42px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+
+  border-radius: 13px;
+
+  background:
+    rgba(20, 20, 22, 0.92);
+
+  color: #fff;
+
+  box-shadow:
+    0 3px 14px
+      rgba(0, 0, 0, 0.4);
+
+  cursor: pointer;
+}
+
+.location-crosshair {
+  position: relative;
+
+  width: 20px;
+  height: 20px;
+
+  display: block;
+
+  border:
+    2px solid
+    rgba(255, 255, 255, 0.9);
+
+  border-radius: 50%;
+}
+
+.location-crosshair::before,
+.location-crosshair::after {
+  content: "";
+
+  position: absolute;
+
+  background:
+    rgba(255, 255, 255, 0.9);
+}
+
+.location-crosshair::before {
+  width: 2px;
+  height: 26px;
+
+  left: 7px;
+  top: -5px;
+}
+
+.location-crosshair::after {
+  width: 26px;
+  height: 2px;
+
+  left: -5px;
+  top: 7px;
+}
+
+.location-crosshair span {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 5px;
+  height: 5px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: #fff;
+}
+
+/* ============================================================
+   LIVE GPS MARKER
+   ============================================================ */
+
+.live-location-marker-wrapper {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.live-location-pulse {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(10, 132, 255, 0.22);
+
+  animation:
+    gpsPulse 1.8s infinite ease-out;
+}
+
+.live-location-pulse span {
+  width: 11px;
+  height: 11px;
+
+  border:
+    3px solid #fff;
+
+  border-radius: 50%;
+
+  background: var(--blue);
+
+  box-shadow:
+    0 1px 8px
+      rgba(0, 0, 0, 0.45);
+}
+
+@keyframes gpsPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.85;
+  }
+
+  70% {
+    transform: scale(1.15);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+/* ============================================================
+   OVERALL DRIVING SUMMARY
+   ============================================================ */
+
+.overall-section {
+  margin-bottom: 20px;
+}
+
+.overall-stats {
+  margin-top: 0;
+}
+
+/* ============================================================
+   DRIVE HISTORY
+   ============================================================ */
+
+.history-section {
+  margin-top: 10px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 9px;
+}
+
+.history-empty {
+  padding: 26px 18px;
+
+  border:
+    1px dashed
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 17px;
+
+  color: var(--muted-text);
+
+  font-size: 13px;
+
+  text-align: center;
+}
+
+/* ============================================================
+   HISTORY ITEM
+   ============================================================ */
+
+.history-item {
+  width: 100%;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.075);
+
+  border-radius: 17px;
+
+  background:
+    #111113;
+
+  box-shadow:
+    0 8px 24px
+      rgba(0, 0, 0, 0.16);
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.history-item.expanded {
+  border-color:
+    rgba(255, 255, 255, 0.11);
+
+  background:
+    #121214;
+}
+
+/* ============================================================
+   COLLAPSED HISTORY SUMMARY
+   ============================================================ */
+
+.history-summary {
+  width: 100%;
+
+  min-height: 78px;
+
+  padding:
+    12px 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--text);
+
+  text-align: left;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color:
+    transparent;
+}
+
+.history-summary-left {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.history-summary-right {
+  flex: 0 0 auto;
+
+  min-width: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 8px;
+}
+
+.history-summary-right > strong {
+  font-size: 15px;
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.history-date-time {
+  display: flex;
+  align-items: baseline;
+
+  gap: 9px;
+
+  min-width: 0;
+}
+
+.history-date-time strong {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.history-date-time span {
+  flex: 0 0 auto;
+
+  color: var(--secondary-text);
+
+  font-size: 11px;
+
+  white-space: nowrap;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.history-locations {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1px;
+
+  margin-top: 5px;
+
+  max-width: 100%;
+}
+
+.history-locations span {
+  display: block;
+
+  max-width: 100%;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color:
+    rgba(255, 255, 255, 0.48);
+
+  font-size: 9px;
+
+  line-height: 1.35;
+}
+
+.history-locations
+  .history-start-location::before {
+  content: "START  ";
+
+  color:
+    rgba(48, 209, 88, 0.72);
+
+  font-weight: 700;
+}
+
+.history-locations
+  .history-end-location::before {
+  content: "FINISH  ";
+
+  color:
+    rgba(255, 69, 58, 0.72);
+
+  font-weight: 700;
+}
+
+.history-chevron {
+  width: 16px;
+
+  color:
+    rgba(255, 255, 255, 0.35);
+
+  font-size: 15px;
+
+  line-height: 1;
+
+  text-align: center;
+}
+
+/* ============================================================
+   EXPANDED HISTORY
+   ============================================================ */
+
+.history-expanded {
+  padding:
+    0 12px
+    13px;
+}
+
+.history-map-wrapper {
+  position: relative;
+
+  width: 100%;
+}
+
+.history-drive-map {
+  width: 100%;
+  height: 245px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.07);
+
+  border-radius: 14px;
+
+  overflow: hidden;
+
+  background: #171719;
+}
+
+.history-map-fullscreen {
+  position: absolute;
+
+  top: 9px;
+  right: 9px;
+
+  z-index: 1000;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 11px;
+
+  background:
+    rgba(15, 15, 17, 0.9);
+
+  color: #fff;
+
+  font-size: 19px;
+
+  line-height: 1;
+
+  box-shadow:
+    0 3px 12px
+      rgba(0, 0, 0, 0.4);
+
+  cursor: pointer;
+
+  -webkit-backdrop-filter:
+    blur(8px);
+
+  backdrop-filter:
+    blur(8px);
+}
+
+.history-map-fullscreen:active {
+  transform: scale(0.95);
+}
+
+.history-speed-section {
+  margin-top: 12px;
+}
+
+.history-chart-title {
+  margin-bottom: 6px;
+
+  color: var(--secondary-text);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.history-speed-chart-container {
+  width: 100%;
+  height: 190px;
+
+  padding: 0;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.07);
+
+  border-radius: 14px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  overflow: hidden;
+}
+
+.history-speed-chart {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  max-width: 100%;
+}
+
+.history-speed-chart > svg {
+  display: block;
+}
+
+.history-chart-empty {
+  display: grid;
+  place-items: center;
+
+  height: 100%;
+  margin: 0;
+  padding: 16px;
+
+  color: var(--secondary-text);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ============================================================
+   ROUTE SUMMARY
+   ============================================================ */
+
+.history-route-summary {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-top: 12px;
+
+  padding:
+    12px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.065);
+
+  border-radius: 14px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.history-route-summary > div {
+  min-width: 0;
+}
+
+.history-route-summary > div:first-child {
+  text-align: left;
+}
+
+.history-route-summary > div:last-child {
+  text-align: right;
+}
+
+.history-route-summary span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--muted-text);
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+}
+
+.history-route-summary strong {
+  display: block;
+
+  color:
+    rgba(255, 255, 255, 0.8);
+
+  font-size: 10px;
+  font-weight: 600;
+
+  line-height: 1.3;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.route-arrow {
+  color:
+    rgba(255, 255, 255, 0.3);
+
+  font-size: 16px;
+}
+
+/* ============================================================
+   HISTORY DETAIL GRID
+   ============================================================ */
+
+.history-detail-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 7px;
+
+  margin-top: 9px;
+}
+
+.history-detail-card {
+  min-width: 0;
+
+  padding:
+    10px 10px
+    11px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.06);
+
+  border-radius: 11px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.history-detail-card span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: var(--muted-text);
+
+  font-size: 9px;
+}
+
+.history-detail-card strong {
+  display: block;
+
+  color:
+    rgba(255, 255, 255, 0.84);
+
+  font-size: 11px;
+  font-weight: 600;
+
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* ============================================================
+   DELETE DRIVE
+   ============================================================ */
+
+.delete-drive-button {
+  width: 100%;
+
+  margin-top: 10px;
+
+  min-height: 39px;
+
+  border:
+    1px solid
+    rgba(255, 69, 58, 0.18);
+
+  border-radius: 11px;
+
+  background:
+    rgba(255, 69, 58, 0.07);
+
+  color:
+    rgba(255, 110, 100, 0.9);
+
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.12s ease;
+}
+
+.delete-drive-button:hover {
+  background:
+    rgba(255, 69, 58, 0.12);
+}
+
+.delete-drive-button:active {
+  transform: scale(0.985);
+}
+
+/* ============================================================
+   FULL-SCREEN MAP MODAL
+   ============================================================ */
+
+.fullscreen-map-modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 99999;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #000;
+
+  padding-top:
+    env(safe-area-inset-top);
+}
+
+.fullscreen-map-modal[hidden] {
+  display: none !important;
+}
+
+.fullscreen-map-header {
+  flex: 0 0 auto;
+
+  height: 58px;
+
+  padding:
+    0 12px 0 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  background:
+    rgba(14, 14, 16, 0.98);
+
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
+  z-index: 100000;
+}
+
+.fullscreen-map-header strong {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 14px;
+  font-weight: 650;
+}
+
+#fullscreenMapClose {
+  flex: 0 0 auto;
+
+  width: 40px;
+  height: 40px;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  color: #fff;
+
+  font-size: 29px;
+  font-weight: 300;
+
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+#fullscreenMapClose:active {
+  transform: scale(0.94);
+}
+
+#fullscreenMap {
+  flex: 1 1 auto;
+
+  min-height: 0;
+
+  width: 100%;
+
+  background: #171719;
+}
+
+#fullscreenMap .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================================
+   BOTTOM NAVIGATION
+   ============================================================ */
+
+.bottom-nav {
+  pointer-events: auto;
+  position: fixed;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 5000;
+
+  height:
+    calc(
+      var(--bottom-nav-height) +
+      env(safe-area-inset-bottom)
+    );
+
+  padding:
+    7px 18px
+    env(safe-area-inset-bottom);
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+
+  background:
+    rgba(12, 12, 14, 0.93);
+
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.07);
+
+  -webkit-backdrop-filter:
+    blur(22px);
+
+  backdrop-filter:
+    blur(22px);
+}
+
+.nav-tab {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  touch-action: manipulation;
+  min-width: 0;
+
+  height: 56px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 2px;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 14px;
+
+  background: transparent;
+
+  color:
+    rgba(255, 255, 255, 0.42);
+
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.nav-tab.active {
+  background:
+    rgba(255, 255, 255, 0.075);
+
+  color: #fff;
+}
+
+.nav-icon {
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 20px;
+  line-height: 1;
+}
+
+.home-icon {
+  font-size: 23px;
+}
+
+/* ============================================================
+   LEAFLET POPUPS
+   ============================================================ */
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #1c1c1e;
+
+  color: #fff;
+}
+
+.leaflet-popup-content {
+  margin: 10px 12px;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-close-button {
+  color:
+    rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+  .header {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .hero-card {
+    padding:
+      23px 15px
+      19px;
+
+    border-radius: 21px;
+  }
+
+  .speed > span:first-child {
+    font-size: 68px;
+  }
+
+  .stats-grid {
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding:
+      12px 11px
+      13px;
+
+    border-radius: 14px;
+  }
+
+  .stat-card strong {
+    font-size: 16px;
+  }
+
+  #map {
+    height: 270px;
+
+    border-radius: 17px;
+  }
+
+  .history-summary {
+    min-height: 73px;
+
+    padding:
+      10px 11px;
+  }
+
+  .history-date-time {
+    gap: 7px;
+  }
+
+  .history-date-time strong {
+    font-size: 12px;
+  }
+
+  .history-date-time span {
+    font-size: 10px;
+  }
+
+  .history-locations span {
+    font-size: 8.5px;
+  }
+
+  .history-summary-right {
+    min-width: 52px;
+
+    gap: 5px;
+  }
+
+  .history-summary-right > strong {
+    font-size: 14px;
+  }
+
+  .history-expanded {
+    padding:
+      0 9px
+      10px;
+  }
+
+  .history-drive-map {
+    height: 225px;
+
+    border-radius: 12px;
+  }
+
+  .history-speed-chart-container {
+    height: 175px;
+
+    border-radius: 12px;
+  }
+
+  .history-detail-grid {
+    gap: 6px;
+  }
+
+  .history-detail-card {
+    padding:
+      9px 8px
+      10px;
+  }
+
+  .history-route-summary {
+    padding: 10px 9px;
+
+    gap: 6px;
+  }
+
+  .history-route-summary strong {
+    font-size: 9px;
+  }
+
+  .history-map-fullscreen {
+    width: 36px;
+    height: 36px;
+
+    top: 7px;
+    right: 7px;
+  }
+}
+
+/* ============================================================
+   VERY SMALL PHONES
+   ============================================================ */
+
+@media (max-width: 360px) {
+  .speed > span:first-child {
+    font-size: 60px;
+  }
+
+  .speed-unit {
+    font-size: 15px;
+  }
+
+  .history-date-time {
+    display: block;
+  }
+
+  .history-date-time span {
+    display: block;
+
+    margin-top: 1px;
+  }
+
+  .history-summary-right {
+    min-width: 48px;
+  }
+
+  .history-summary-right > strong {
+    font-size: 13px;
+  }
+
+  .history-drive-map {
+    height: 210px;
+  }
+
+  .history-speed-chart-container {
+    height: 165px;
+  }
+}
+
+/* ============================================================
+   LANDSCAPE PHONES
+   ============================================================ */
+
+@media (
+  orientation: landscape
+) and (max-height: 500px) {
+  .fullscreen-map-header {
+    height: 50px;
+  }
+
+  #fullscreenMapClose {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ============================================================
+   REDUCE MOTION
+   ============================================================ */
+
+@media (
+  prefers-reduced-motion: reduce
+) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+
+    animation-duration:
+      0.001ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+    transition-duration:
+      0.001ms !important;
+  }
+}.chart-axis-label {
+  fill: #8f8f98;
+  font-size: 11px;
+}
+
+.chart-grid-line {
+  stroke: rgba(255, 255, 255, 0.10);
+  stroke-width: 1;
+}@media (max-width: 600px) {
+  .bottom-nav {
+    z-index: 99999;
+  }
+
+  .nav-tab {
+    position: relative;
+    z-index: 100000;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+}
+/* ============================================================
+   HOME SPEED LEGEND
+   ============================================================ */
+
+.speed-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+
+  margin-top: 9px;
+
+  color: var(--secondary-text);
+  font-size: 10px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  white-space: nowrap;
+}
+
+.legend-color {
+  width: 18px;
+  height: 5px;
+
+  display: inline-block;
+
+  border-radius: 999px;
+}
+
+.legend-color.blue {
+  background: #0a84ff;
+}
+
+.legend-color.green {
+  background: #30d158;
+}
+
+.legend-color.yellow {
+  background: #ffe600;
+}
+
+.legend-color.orange {
+  background: #ff9f0a;
+}
+
+.legend-color.red {
+  background: #ff453a;
+}
+
+.legend-unit {
+  color: var(--muted-text);
+  font-size: 9px;
+}/* ============================================================
+   EXPANDED DRIVE DETAIL CARDS
+   ============================================================ */
+
+.history-details {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 7px;
+
+  margin-top: 9px;
+}
+
+.history-detail {
+  min-width: 0;
+
+  padding:
+    10px 10px
+    11px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.06);
+
+  border-radius: 11px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.history-detail span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: var(--muted-text);
+
+  font-size: 9px;
+}
+
+.history-detail strong {
+  display: block;
+
+  color:
+    rgba(255, 255, 255, 0.84);
+
+  font-size: 11px;
+  font-weight: 600;
+
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+
+  font-variant-numeric:
+    tabular-nums;
+}
