@@ -1743,4 +1743,68 @@ main {
 
   font-variant-numeric:
     tabular-nums;
+}/* ============================================================
+   NATIVE IOS SAFE AREA
+   ============================================================ */
+
+@supports (-webkit-touch-callout: none) {
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
+}/* ============================================================
+   HISTORY MAP FULLSCREEN OVERLAY
+   ============================================================ */
+
+.fullscreen-map-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  padding-top: env(safe-area-inset-top);
+}
+
+.fullscreen-map-overlay .fullscreen-map-header {
+  flex: 0 0 auto;
+  height: 58px;
+  padding: 0 12px 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(14, 14, 16, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 100000;
+}
+
+.fullscreen-map-close {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 29px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.fullscreen-map-close:active {
+  transform: scale(0.94);
+}
+
+.fullscreen-drive-map {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  background: #171719;
+}
+
+.fullscreen-drive-map .leaflet-container {
+  width: 100%;
+  height: 100%;
 }
