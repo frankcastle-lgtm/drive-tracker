@@ -61,48 +61,48 @@ document.querySelector("#app").innerHTML = `
         </section>
 
         <section class="stats-grid">
-          <div class="stat-card">
-            <span>Duration</span>
-            <strong id="duration">
-              00:00:00
-            </strong>
-          </div>
+  <div class="stat-card">
+    <span>Duration</span>
+    <strong id="duration">
+      00:00:00
+    </strong>
+  </div>
 
-          <div class="stat-card">
-            <span>Distance</span>
-            <strong id="distance">
-              0.00 km
-            </strong>
-          </div>
+  <div class="stat-card">
+    <span>Distance</span>
+    <strong id="distance">
+      0 km
+    </strong>
+  </div>
 
-          <div class="stat-card">
-            <span>Top speed</span>
-            <strong id="topSpeed">
-              0 km/h
-            </strong>
-          </div>
+  <div class="stat-card">
+    <span>Moving time</span>
+    <strong id="movingTime">
+      00:00:00
+    </strong>
+  </div>
 
-          <div class="stat-card">
-            <span>Average</span>
-            <strong id="averageSpeed">
-              0 km/h
-            </strong>
-          </div>
+  <div class="stat-card">
+    <span>Top speed</span>
+    <strong id="topSpeed">
+      0 km/h
+    </strong>
+  </div>
 
-          <div class="stat-card">
-            <span>Moving time</span>
-            <strong id="movingTime">
-              00:00:00
-            </strong>
-          </div>
+  <div class="stat-card">
+    <span>Stopped time</span>
+    <strong id="stoppedTime">
+      00:00:00
+    </strong>
+  </div>
 
-          <div class="stat-card">
-            <span>Stopped time</span>
-            <strong id="stoppedTime">
-              00:00:00
-            </strong>
-          </div>
-        </section>
+  <div class="stat-card">
+    <span>Average Speed</span>
+    <strong id="averageSpeed">
+      0 km/h
+    </strong>
+  </div>
+</section>
 
         <section class="map-section">
           <div class="section-heading">
@@ -172,32 +172,46 @@ document.querySelector("#app").innerHTML = `
             class="stats-grid overall-stats"
           >
             <div class="stat-card">
-              <span>Total Drives</span>
-              <strong id="totalDrives">
-                0
-              </strong>
-            </div>
+  <span>Total Drives</span>
+  <strong id="totalDrives">
+    0
+  </strong>
+</div>
 
-            <div class="stat-card">
-              <span>Total Distance</span>
-              <strong id="totalDistance">
-                0.00 km
-              </strong>
-            </div>
+<div class="stat-card">
+  <span>Total Distance</span>
+  <strong id="totalDistance">
+    0.00 km
+  </strong>
+</div>
 
-            <div class="stat-card">
-              <span>Highest Speed Ever</span>
-              <strong id="highestSpeed">
-                0 km/h
-              </strong>
-            </div>
+<div class="stat-card">
+  <span>Car Distance</span>
+  <strong id="carDistance">
+    0.00 km
+  </strong>
+</div>
 
-            <div class="stat-card">
-              <span>Total Driving Time</span>
-              <strong id="totalDrivingTime">
-                00:00:00
-              </strong>
-            </div>
+<div class="stat-card">
+  <span>Bike Distance</span>
+  <strong id="bikeDistance">
+    0.00 km
+  </strong>
+</div>
+
+<div class="stat-card">
+  <span>Highest Speed Ever</span>
+  <strong id="highestSpeed">
+    0 km/h
+  </strong>
+</div>
+
+<div class="stat-card">
+  <span>Total Driving Time</span>
+  <strong id="totalDrivingTime">
+    00:00:00
+  </strong>
+</div>
           </section>
         </section>
 
@@ -356,6 +370,52 @@ const highestSpeedDisplay =
   document.querySelector(
     "#highestSpeed"
   );
+highestSpeedDisplay.addEventListener(
+  "click",
+  () => {
+    const drives =
+      getSavedDrives();
+
+    if (drives.length === 0) {
+      return;
+    }
+
+    const highestSpeed =
+      Math.max(
+        ...drives.map(
+          (drive) =>
+            Number(
+              drive.topSpeed
+            ) || 0
+        )
+      );
+
+    const matchingDrives =
+      drives.filter(
+        (drive) =>
+          (Number(
+            drive.topSpeed
+          ) || 0) ===
+          highestSpeed
+      );
+
+    if (
+      matchingDrives.length === 1
+    ) {
+      toggleHistoryDrive(
+        matchingDrives[0].id
+      );
+
+      return;
+    }
+
+    // Popup for multiple matching drives
+    showHighestSpeedDrivePicker(
+      matchingDrives,
+      highestSpeed
+    );
+  }
+);
 
 const totalDrivingTimeDisplay =
   document.querySelector(
@@ -381,6 +441,7 @@ let startTime = null;
 let timer = null;
 let watchId = null;
 let nativeLocationActive = false;
+let selectedTransportation = null;
 
 let lastPosition = null;
 
@@ -803,12 +864,20 @@ function formatChartTime(
   const remainingSeconds =
     elapsedSeconds % 60;
 
-  return `${minutes}:${remainingSeconds
-    .toString()
-    .padStart(
-      2,
-      "0"
-    )}`;
+  const hours = Math.floor(minutes / 60);
+const remainingMinutes = minutes % 60;
+
+return `${hours}:${remainingMinutes
+  .toString()
+  .padStart(
+    2,
+    "0"
+  )}:${remainingSeconds
+  .toString()
+  .padStart(
+    2,
+    "0"
+  )}`;
 }
 
 function formatDate(
@@ -1212,6 +1281,25 @@ function updateOverallStats() {
         ) || 0),
       0
     );
+    const carDistance =
+  drives.reduce(
+    (total, drive) =>
+      total +
+      (drive.transportation === "car"
+        ? Number(drive.distance) || 0
+        : 0),
+    0
+  );
+
+const bikeDistance =
+  drives.reduce(
+    (total, drive) =>
+      total +
+      (drive.transportation === "bike"
+        ? Number(drive.distance) || 0
+        : 0),
+    0
+  );
 
   const highestSpeed =
     drives.reduce(
@@ -1252,6 +1340,15 @@ function updateOverallStats() {
     formatDuration(
       totalDrivingTime
     );
+    document.getElementById(
+  "carDistance"
+).textContent =
+  `${carDistance.toFixed(2)} km`;
+
+document.getElementById(
+  "bikeDistance"
+).textContent =
+  `${bikeDistance.toFixed(2)} km`;
 }
 
 /* =========================================================
@@ -1305,12 +1402,134 @@ function activateTab(
     behavior: "smooth",
   });
 }
+function chooseTransportation() {
+  return new Promise((resolve) => {
+    const overlay =
+      document.createElement(
+        "div"
+      );
 
+    overlay.className =
+      "transportation-modal-overlay";
+
+    overlay.innerHTML = `
+      <div class="transportation-modal">
+        <h2>
+          Choose transportation
+        </h2>
+
+        <button
+          type="button"
+          class="transportation-choice"
+          data-transportation-choice="car"
+        >
+          <span class="transportation-choice-icon">
+            🚗
+          </span>
+
+          <span>
+            Car
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="transportation-choice"
+          data-transportation-choice="bike"
+        >
+          <span class="transportation-choice-icon">
+            🏍️
+          </span>
+
+          <span>
+            Bike
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="transportation-cancel"
+        >
+          Cancel
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(
+      overlay
+    );
+
+    const closeModal = (
+      value
+    ) => {
+      overlay.remove();
+      resolve(value);
+    };
+
+    overlay
+      .querySelectorAll(
+        "[data-transportation-choice]"
+      )
+      .forEach(
+        (button) => {
+          button.addEventListener(
+            "click",
+            () => {
+              closeModal(
+                button.dataset
+                  .transportationChoice
+              );
+            }
+          );
+        }
+      );
+
+    overlay
+      .querySelector(
+        ".transportation-cancel"
+      )
+      .addEventListener(
+        "click",
+        () => {
+          closeModal(null);
+        }
+      );
+
+    overlay.addEventListener(
+      "click",
+      (event) => {
+        if (
+          event.target ===
+          overlay
+        ) {
+          closeModal(null);
+        }
+      }
+    );
+  });
+}
 /* =========================================================
    START DRIVE
    ========================================================= */
 
-function startDrive() {
+async function startDrive() {
+  const gpsReady =
+    await checkGpsStatus();
+
+  if (!gpsReady) {
+    showGpsNotReadyPopup();
+    return;
+  }
+
+  const transportation =
+    await chooseTransportation();
+
+  if (!transportation) {
+    return;
+  }
+
+selectedTransportation =
+  transportation;
   if (
     !navigator.geolocation
   ) {
@@ -1377,7 +1596,7 @@ function startDrive() {
     "00:00:00";
 
   distanceDisplay.textContent =
-    "0.00 km";
+    "0 km";
 
   topSpeedDisplay.textContent =
     "0 km/h";
@@ -1542,43 +1761,256 @@ startButton.addEventListener(
     }
   }
 );
+ /* =========================================================
+    INDEXEDDB STORAGE
+    ========================================================= */
 
+const DRIVE_DATABASE_NAME =
+  "DriveTrackerDB";
+
+const DRIVE_DATABASE_VERSION = 1;
+
+const DRIVE_STORE_NAME =
+  "drives";
+
+let driveDatabasePromise = null;
+
+function openDriveDatabase() {
+  if (driveDatabasePromise) {
+    return driveDatabasePromise;
+  }
+
+  driveDatabasePromise =
+    new Promise((resolve, reject) => {
+      const request =
+        indexedDB.open(
+          DRIVE_DATABASE_NAME,
+          DRIVE_DATABASE_VERSION
+        );
+
+      request.onupgradeneeded = () => {
+        const database =
+          request.result;
+
+        if (
+          !database.objectStoreNames.contains(
+            DRIVE_STORE_NAME
+          )
+        ) {
+          database.createObjectStore(
+            DRIVE_STORE_NAME,
+            {
+              keyPath: "id",
+            }
+          );
+        }
+      };
+
+      request.onsuccess = () => {
+        resolve(request.result);
+      };
+
+      request.onerror = () => {
+        console.error(
+          "Could not open drive database:",
+          request.error
+        );
+
+        reject(request.error);
+      };
+    });
+
+  return driveDatabasePromise;
+}
+async function getDrivesFromDatabase() {
+  const database =
+    await openDriveDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction =
+      database.transaction(
+        DRIVE_STORE_NAME,
+        "readonly"
+      );
+
+    const store =
+      transaction.objectStore(
+        DRIVE_STORE_NAME
+      );
+
+    const request =
+      store.getAll();
+
+    request.onsuccess = () => {
+      resolve(
+        Array.isArray(request.result)
+          ? request.result
+          : []
+      );
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+async function saveDriveToDatabase(drive) {
+  const database =
+    await openDriveDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction =
+      database.transaction(
+        DRIVE_STORE_NAME,
+        "readwrite"
+      );
+
+    const store =
+      transaction.objectStore(
+        DRIVE_STORE_NAME
+      );
+
+    const request =
+      store.put(drive);
+
+    request.onsuccess = () => {
+      resolve();
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+async function deleteDriveFromDatabase(driveId) {
+  const database =
+    await openDriveDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction =
+      database.transaction(
+        DRIVE_STORE_NAME,
+        "readwrite"
+      );
+
+    const store =
+      transaction.objectStore(
+        DRIVE_STORE_NAME
+      );
+
+    const request =
+      store.delete(driveId);
+
+    request.onsuccess = () => {
+      resolve();
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+let savedDrivesCache = [];
+
+let savedDrivesCacheReady = false;
+
+async function loadDrivesIntoCache() {
+  try {
+    let drives =
+      await getDrivesFromDatabase();
+      try {
+  const saved =
+    localStorage.getItem(
+      "driveHistory"
+    );
+
+  if (saved) {
+    const oldDrives =
+      JSON.parse(
+        saved
+      );
+
+    if (
+      Array.isArray(
+        oldDrives
+      )
+    ) {
+      const databaseIds =
+        new Set(
+          drives.map(
+            (drive) =>
+              String(
+                drive.id
+              )
+          )
+        );
+
+      for (
+        const drive of oldDrives
+      ) {
+        if (
+          !databaseIds.has(
+            String(
+              drive.id
+            )
+          )
+        ) {
+          await saveDriveToDatabase(
+            drive
+          );
+        }
+      }
+
+      drives =
+        await getDrivesFromDatabase();
+    }
+  }
+} catch (
+  error
+) {
+  console.error(
+    "Could not migrate old drive history:",
+    error
+  );
+}
+drives.sort(
+  (a, b) =>
+    Number(
+      b.startTime
+    ) -
+    Number(
+      a.startTime
+    )
+);
+
+    savedDrivesCache =
+      Array.isArray(drives)
+        ? drives
+        : [];
+
+    savedDrivesCacheReady = true;
+
+    return savedDrivesCache;
+  } catch (error) {
+    console.error(
+      "Could not load drives into cache:",
+      error
+    );
+
+    savedDrivesCacheReady = false;
+
+    return [];
+  }
+}
+loadDrivesIntoCache();
 /* =========================================================
    LOCAL STORAGE
    ========================================================= */
 
 function getSavedDrives() {
-  try {
-    const saved =
-      localStorage.getItem(
-        "driveHistory"
-      );
-
-    if (!saved) {
-      return [];
-    }
-
-    const drives =
-      JSON.parse(
-        saved
-      );
-
-    return Array.isArray(
-      drives
-    )
-      ? drives
-      : [];
-  } catch (
-    error
-  ) {
-    console.error(
-      "Could not read drive history:",
-      error
-    );
-
-    return [];
-  }
-}/* =========================================================
+  return savedDrivesCache;
+}
+/* =========================================================
    GPS POSITION HANDLER
    ========================================================= */
 
@@ -2099,7 +2531,8 @@ async function stopDrive() {
   const drive = {
     id:
       Date.now().toString(),
-
+    transportation:
+      selectedTransportation,
     startTime:
       startTime,
 
@@ -2180,6 +2613,18 @@ function saveDrive(
   drives.unshift(
     drive
   );
+  savedDrivesCacheReady = true;
+
+saveDriveToDatabase(
+  drive
+).catch(
+  (error) => {
+    console.error(
+      "Could not save drive to database:",
+      error
+    );
+  }
+);
 
   try {
     localStorage.setItem(
@@ -2197,7 +2642,140 @@ function saveDrive(
     );
   }
 }
+function changeTransportation(
+  driveId
+) {
+  const overlay =
+    document.createElement(
+      "div"
+    );
 
+  overlay.className =
+    "transportation-modal-overlay";
+
+  overlay.innerHTML = `
+    <div class="transportation-modal">
+      <h2>
+        Change transportation
+      </h2>
+
+      <button
+        type="button"
+        class="transportation-choice"
+        data-transportation-choice="car"
+      >
+        <span class="transportation-choice-icon">
+          🚗
+        </span>
+
+        <span>
+          Car
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="transportation-choice"
+        data-transportation-choice="bike"
+      >
+        <span class="transportation-choice-icon">
+          🏍️
+        </span>
+
+        <span>
+          Bike
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="transportation-cancel"
+      >
+        Cancel
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(
+    overlay
+  );
+
+  const closeModal = () => {
+    overlay.remove();
+  };
+
+  overlay
+    .querySelectorAll(
+      "[data-transportation-choice]"
+    )
+    .forEach(
+      (button) => {
+        button.addEventListener(
+          "click",
+          () => {
+            const transportation =
+              button.dataset
+                .transportationChoice;
+
+            const drives =
+              getSavedDrives();
+
+            const drive =
+              drives.find(
+                (item) =>
+                  String(item.id) ===
+                  String(driveId)
+              );
+
+            if (!drive) {
+              closeModal();
+              return;
+            }
+
+            drive.transportation =
+              transportation;
+
+            saveDriveToDatabase(
+            drive
+          ).catch(
+            (error) => {
+              console.error(
+                "Could not update transportation:",
+                error
+              );
+            }
+          );
+
+           closeModal();
+
+            renderHistory();
+            updateOverallStats();
+          }
+        );
+      }
+    );
+
+  overlay
+    .querySelector(
+      ".transportation-cancel"
+    )
+    .addEventListener(
+      "click",
+      closeModal
+    );
+
+  overlay.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target ===
+        overlay
+      ) {
+        closeModal();
+      }
+    }
+  );
+}
 /* =========================================================
    DELETE DRIVE
    ========================================================= */
@@ -2219,21 +2797,35 @@ function deleteDrive(
         )
     );
 
-  try {
-    localStorage.setItem(
-      "driveHistory",
-      JSON.stringify(
-        updated
-      )
-    );
-  } catch (
-    error
-  ) {
+  savedDrivesCache =
+  updated;
+
+deleteDriveFromDatabase(
+  driveId
+).catch(
+  (error) => {
     console.error(
-      "Could not delete drive:",
+      "Could not delete drive from database:",
       error
     );
   }
+);
+
+try {
+  localStorage.setItem(
+    "driveHistory",
+    JSON.stringify(
+      updated
+    )
+  );
+} catch (
+  error
+) {
+  console.error(
+    "Could not delete drive:",
+    error
+  );
+}
 
   if (
     String(
@@ -2386,15 +2978,23 @@ async function updateHistoryLocations() {
     }
 
     if (
-      changed
-    ) {
-      localStorage.setItem(
-        "driveHistory",
-        JSON.stringify(
-          drives
-        )
-      );
-    }
+  changed
+) {
+  for (
+    const drive of drives
+  ) {
+    await saveDriveToDatabase(
+      drive
+    );
+  }
+
+  localStorage.setItem(
+    "driveHistory",
+    JSON.stringify(
+      drives
+    )
+  );
+}
   } catch (
     error
   ) {
@@ -2610,7 +3210,7 @@ function renderHistory() {
                       class="history-start-location"
                     >
                       ${escapeHtml(
-                        `Start: ${startName}`
+                        startName
                       )}
                     </div>
 
@@ -2618,7 +3218,7 @@ function renderHistory() {
                       class="history-end-location"
                     >
                       ${escapeHtml(
-                        `Finish: ${finishName}`
+                        finishName
                       )}
                     </div>
 
@@ -2627,14 +3227,20 @@ function renderHistory() {
                 </div>
 
                 <div class="history-summary-right">
+  
 
-                  <strong>
-                    ${distance.toFixed(
-                      2
-                    )} km
-                  </strong>
-
-                  <span class="history-chevron">
+  <strong>
+    ${distance.toFixed(2)} km
+  </strong>
+  <span
+  class="history-transportation-icon"
+  data-change-transportation="${escapeHtml(String(drive.id))}"
+  role="button"
+  tabindex="0"
+>
+  ${drive.transportation === "bike" ? "🏍️" : "🚗"}
+</span>
+  <span class="history-chevron">
                     ${
                       isExpanded
                         ? "⌃"
@@ -2646,8 +3252,10 @@ function renderHistory() {
 
               </button>
 
-              ${
-                isExpanded
+
+
+${
+  isExpanded
                   ? `
                     <div class="history-expanded">
 
@@ -2666,12 +3274,10 @@ function renderHistory() {
 
                         <div class="chart-heading">
 
-                          <span>
-                            Speed
-                          </span>
+                          
 
                           <span>
-                            Max ${Math.round(
+                            Max Speed ${Math.round(
                               top
                             )} km/h
                           </span>
@@ -2892,7 +3498,28 @@ function renderHistory() {
         );
       }
     );
+historyElement
+  .querySelectorAll(
+    "[data-change-transportation]"
+  )
+  .forEach(
+    (button) => {
+      button.addEventListener(
+        "click",
+        (event) => {
+          event.stopPropagation();
 
+          const driveId =
+            button.dataset
+              .changeTransportation;
+
+          changeTransportation(
+            driveId
+          );
+        }
+      );
+    }
+  );
   historyElement
     .querySelectorAll(
       "[data-delete-drive]"
@@ -2962,7 +3589,139 @@ function renderHistory() {
 }
   }
 }
+function showHighestSpeedDrivePicker(
+  drives,
+  highestSpeed
+) {
+  const overlay =
+    document.createElement(
+      "div"
+    );
 
+  overlay.className =
+    "transportation-modal-overlay";
+
+  overlay.innerHTML = `
+    <div class="transportation-modal">
+      <h2>
+        Highest Speed
+      </h2>
+
+      <p
+        style="
+          margin: 0 0 16px;
+          color: #a1a1a6;
+          font-size: 15px;
+        "
+      >
+        ${Math.round(
+          highestSpeed
+        )} km/h was recorded on multiple drives.
+      </p>
+
+      ${drives
+        .map(
+          (drive) => `
+            <button
+              type="button"
+              class="transportation-choice"
+              data-highest-speed-drive="${escapeHtml(
+                String(
+                  drive.id
+                )
+              )}"
+            >
+              <span>
+                ${
+                  drive.startTime
+                    ? formatDate(
+                        drive.startTime
+                      )
+                    : "Unknown date"
+                }
+              </span>
+
+              <span
+                style="
+                  margin-left: auto;
+                  color: #a1a1a6;
+                  font-size: 14px;
+                "
+              >
+                ${
+                  drive.startTime
+                    ? formatTime(
+                        drive.startTime
+                      )
+                    : "--"
+                }
+              </span>
+            </button>
+          `
+        )
+        .join("")}
+
+      <button
+        type="button"
+        class="transportation-cancel"
+      >
+        Cancel
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(
+    overlay
+  );
+
+  const closeModal = () => {
+    overlay.remove();
+  };
+
+  overlay
+    .querySelectorAll(
+      "[data-highest-speed-drive]"
+    )
+    .forEach(
+      (button) => {
+        button.addEventListener(
+          "click",
+          () => {
+            const driveId =
+              button.dataset
+                .highestSpeedDrive;
+
+            closeModal();
+
+            toggleHistoryDrive(
+              driveId
+            );
+          }
+        );
+      }
+    );
+
+  overlay
+    .querySelector(
+      ".transportation-cancel"
+    )
+    .addEventListener(
+      "click",
+      closeModal
+    );
+
+  overlay.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target ===
+        overlay
+      ) {
+        closeModal();
+      }
+    }
+  );
+}
 /* =========================================================
    HTML ESCAPING
    ========================================================= */
@@ -3375,6 +4134,11 @@ function drawHistorySpeedChart(
       10,
       ...speeds
     );
+    const colorScaleMax =
+  Math.max(
+    100,
+    maxSpeed
+  );
 
   const svg =
     document.createElementNS(
@@ -3643,12 +4407,12 @@ gradient.setAttribute(
 
 gradient.setAttribute(
   "x2",
-  "100%"
+  "0%"
 );
 
 gradient.setAttribute(
   "y1",
-  "0%"
+  "100%"
 );
 
 gradient.setAttribute(
@@ -3692,7 +4456,7 @@ colorStops.forEach(
       `${Math.min(
         100,
         (stop.speed /
-          maxSpeed) *
+          colorScaleMax) *
           100
       )}%`
     );
@@ -3954,9 +4718,10 @@ window.addEventListener(
    INITIAL HISTORY RENDER
    ========================================================= */
 
-renderHistory();
-
-updateOverallStats();
+loadDrivesIntoCache().then(() => {
+  renderHistory();
+  updateOverallStats();
+});
 
 /*
  * Try to obtain readable start/end locations
@@ -4544,7 +5309,7 @@ durationDisplay.textContent =
   "00:00:00";
 
 distanceDisplay.textContent =
-  "0.00 km";
+  "0 km";
 
 topSpeedDisplay.textContent =
   "0 km/h";
@@ -4561,6 +5326,105 @@ stoppedTimeDisplay.textContent =
 gpsMessage.textContent =
   "GPS ready";
 
+gpsMessage.classList.remove(
+  "gps-not-ready"
+);
+
+async function checkGpsStatus() {
+  if (!navigator.geolocation) {
+    gpsMessage.textContent =
+  "GPS not ready";
+
+gpsMessage.classList.add(
+  "gps-not-ready"
+);
+
+    return false;
+  }
+
+  gpsMessage.textContent =
+    "Checking GPS...";
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        gpsMessage.textContent =
+          "GPS ready";
+
+        resolve(true);
+      },
+      () => {
+        gpsMessage.textContent =
+  "GPS not ready";
+
+gpsMessage.classList.add(
+  "gps-not-ready"
+);
+
+        resolve(false);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 5000,
+      }
+    );
+  });
+}
+function showGpsNotReadyPopup() {
+  const overlay =
+    document.createElement(
+      "div"
+    );
+
+  overlay.className =
+    "transportation-modal-overlay";
+
+  overlay.innerHTML = `
+    <div class="transportation-modal">
+      <h2>
+        Please enable Location Services
+      </h2>
+
+      <button
+        type="button"
+        class="transportation-cancel"
+      >
+        Dismiss
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(
+    overlay
+  );
+
+  const closeModal = () => {
+    overlay.remove();
+  };
+
+  overlay
+    .querySelector(
+      ".transportation-cancel"
+    )
+    .addEventListener(
+      "click",
+      closeModal
+    );
+
+  overlay.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target ===
+        overlay
+      ) {
+        closeModal();
+      }
+    }
+  );
+}
+checkGpsStatus();
 /* =========================================================
    INITIAL MAP / HISTORY
    ========================================================= */

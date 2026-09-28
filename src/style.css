@@ -251,17 +251,21 @@ main {
 }
 
 .speed {
-  position: relative;
-
   margin-top: 4px;
-
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-
-  gap: 7px;
+  gap: 0;
+}
+.speed #speed {
+  display: block;
 }
 
+.speed .speed-unit {
+  display: block;
+  margin-top: -2px;
+}
 .speed > span:first-child {
   font-size: 76px;
   line-height: 0.98;
@@ -670,6 +674,9 @@ main {
    ============================================================ */
 
 .history-item {
+  
+  position: relative;
+
   width: 100%;
 
   overflow: hidden;
@@ -705,6 +712,7 @@ main {
    ============================================================ */
 
 .history-summary {
+  
   width: 100%;
 
   min-height: 78px;
@@ -933,7 +941,7 @@ main {
 }
 
 .history-speed-section {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .history-chart-title {
@@ -948,6 +956,8 @@ main {
 .history-speed-chart-container {
   width: 100%;
   height: 190px;
+
+  margin-top: 16px;
 
   padding: 0;
 
@@ -1807,4 +1817,97 @@ main {
 .fullscreen-drive-map .leaflet-container {
   width: 100%;
   height: 100%;
+}.chart-heading {
+  margin-left: 10px;
+}.transportation-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.transportation-modal {
+  width: 100%;
+  max-width: 360px;
+  padding: 22px;
+  border-radius: 24px;
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.transportation-modal h2 {
+  margin: 0 0 18px;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.transportation-choice {
+  width: 100%;
+  min-height: 64px;
+  margin-bottom: 10px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 0;
+  border-radius: 16px;
+  background: #2c2c2e;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.transportation-choice:active {
+  transform: scale(0.98);
+  background: #3a3a3c;
+}
+
+.transportation-choice-icon {
+  width: 34px;
+  font-size: 27px;
+  text-align: center;
+}
+
+.transportation-cancel {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: #0a84ff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.transportation-cancel:active {
+  background: rgba(10, 132, 255, 0.1);
+}.history-transportation-icon {
+  flex: 0 0 auto;
+
+  padding: 0;
+  border: 0;
+  background: transparent;
+
+  color: inherit;
+  font-size: 34px;
+  line-height: 1;
+
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.history-summary-right > strong {
+  transform: translateX(20px, -5px);
+}.gps-not-ready {
+  color: #ff453a !important;
 }
