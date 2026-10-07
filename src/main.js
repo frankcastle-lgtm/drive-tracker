@@ -4134,11 +4134,7 @@ function drawHistorySpeedChart(
       10,
       ...speeds
     );
-    const colorScaleMax =
-  Math.max(
-    100,
-    maxSpeed
-  );
+    
 
   const svg =
     document.createElementNS(
@@ -4452,14 +4448,14 @@ colorStops.forEach(
       );
 
     gradientStop.setAttribute(
-      "offset",
-      `${Math.min(
-        100,
-        (stop.speed /
-          colorScaleMax) *
-          100
-      )}%`
-    );
+  "offset",
+  `${Math.min(
+    100,
+    (stop.speed /
+      maxSpeed) *
+      100
+  )}%`
+);
 
     gradientStop.setAttribute(
       "stop-color",
@@ -5390,7 +5386,7 @@ function showGpsNotReadyPopup() {
         type="button"
         class="transportation-cancel"
       >
-        Dismiss
+        Go back
       </button>
     </div>
   `;
