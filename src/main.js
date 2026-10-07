@@ -1009,23 +1009,126 @@ function calculateDistance(
 function getSpeedColor(
   speed
 ) {
-  if (speed >= 100) {
-    return "#ff453a";
+  const colors = [
+    {
+      speed: 0,
+      color: "#0a84ff",
+    },
+    {
+      speed: 10,
+      color: "#30d158",
+    },
+    {
+      speed: 40,
+      color: "#ffe600",
+    },
+    {
+      speed: 70,
+      color: "#ff9f0a",
+    },
+    {
+      speed: 100,
+      color: "#ff453a",
+    },
+  ];
+
+  const transitionRange = 4;
+
+  if (speed <= 0) {
+    return colors[0].color;
   }
 
-  if (speed >= 70) {
-    return "#ff9f0a";
+  for (
+    let i = 0;
+    i < colors.length - 1;
+    i++
+  ) {
+    const lower = colors[i];
+    const upper = colors[i + 1];
+
+    const transitionStart =
+      upper.speed -
+      transitionRange / 2;
+
+    const transitionEnd =
+      upper.speed +
+      transitionRange / 2;
+
+    if (
+      speed >= transitionStart &&
+      speed <= transitionEnd
+    ) {
+      const ratio =
+        (speed -
+          transitionStart) /
+        (transitionEnd -
+          transitionStart);
+
+      const hexToRgb = (hex) => ({
+        r: parseInt(
+          hex.slice(1, 3),
+          16
+        ),
+        g: parseInt(
+          hex.slice(3, 5),
+          16
+        ),
+        b: parseInt(
+          hex.slice(5, 7),
+          16
+        ),
+      });
+
+      const rgbToHex = (
+        r,
+        g,
+        b
+      ) =>
+        `#${[r, g, b]
+          .map((value) =>
+            Math.round(value)
+              .toString(16)
+              .padStart(2, "0")
+          )
+          .join("")}`;
+
+      const startRgb =
+        hexToRgb(
+          lower.color
+        );
+
+      const endRgb =
+        hexToRgb(
+          upper.color
+        );
+
+      return rgbToHex(
+        startRgb.r +
+          (endRgb.r -
+            startRgb.r) *
+            ratio,
+        startRgb.g +
+          (endRgb.g -
+            startRgb.g) *
+            ratio,
+        startRgb.b +
+          (endRgb.b -
+            startRgb.b) *
+            ratio
+      );
+    }
+
+    if (
+      speed <
+      upper.speed
+    ) {
+      return lower.color;
+    }
   }
 
-  if (speed >= 40) {
-    return "#ffe600";
-  }
-
-  if (speed >= 10) {
-    return "#30d158";
-  }
-
-  return "#0a84ff";
+  return colors[
+    colors.length - 1
+  ].color;
 }
 
 /* =========================================================
