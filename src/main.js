@@ -4385,147 +4385,150 @@ function drawHistorySpeedChart(
  * Draw the speed line as one continuous path.
  * The gradient blends smoothly between speed colors.
  */
-const gradient =
-  document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "linearGradient"
-  );
+  /*
+   * Draw the speed line using the actual speed of each section.
+   * Each section uses the same speed thresholds as the Home legend.
+   */
+  for (
+    let i = 0;
+    i < points.length - 1;
+    i++
+  ) {
+    const startPoint = points[i];
+    const endPoint = points[i + 1];
 
-gradient.setAttribute(
-  "id",
-  `speed-gradient-${drive.id}`
-);
+    const startSpeed = startPoint.speed;
+    const endSpeed = endPoint.speed;
 
-gradient.setAttribute(
-  "x1",
-  "0%"
-);
+    const thresholds = [
+      10,
+      40,
+      70,
+      100,
+    ];
 
-gradient.setAttribute(
-  "x2",
-  "0%"
-);
+    const splitSpeeds = [
+      startSpeed,
+      ...thresholds.filter(
+        (threshold) =>
+          (threshold > startSpeed &&
+            threshold < endSpeed) ||
+          (threshold < startSpeed &&
+            threshold > endSpeed)
+      ),
+      endSpeed,
+    ].sort(
+      (a, b) =>
+        startSpeed <= endSpeed
+          ? a - b
+          : b - a
+    );
 
-gradient.setAttribute(
-  "y1",
-  "100%"
-);
+    for (
+      let j = 0;
+      j < splitSpeeds.length - 1;
+      j++
+    ) {
+      const segmentStartSpeed =
+        splitSpeeds[j];
 
-gradient.setAttribute(
-  "y2",
-  "0%"
-);
+      const segmentEndSpeed =
+        splitSpeeds[j + 1];
 
-const colorStops = [
-  {
-    speed: 0,
-    color: "#0a84ff",
-  },
-  {
-    speed: 10,
-    color: "#30d158",
-  },
-  {
-    speed: 40,
-    color: "#ffe600",
-  },
-  {
-    speed: 70,
-    color: "#ff9f0a",
-  },
-  {
-    speed: 100,
-    color: "#ff453a",
-  },
-];
+      const speedRange =
+        endSpeed - startSpeed;
 
-colorStops.forEach(
-  (stop) => {
-    const gradientStop =
-      document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "stop"
+      const startRatio =
+        speedRange === 0
+          ? 0
+          : (segmentStartSpeed -
+              startSpeed) /
+            speedRange;
+
+      const endRatio =
+        speedRange === 0
+          ? 1
+          : (segmentEndSpeed -
+              startSpeed) /
+            speedRange;
+
+      const segmentStartX =
+        startPoint.x +
+        (endPoint.x -
+          startPoint.x) *
+          startRatio;
+
+      const segmentStartY =
+        startPoint.y +
+        (endPoint.y -
+          startPoint.y) *
+          startRatio;
+
+      const segmentEndX =
+        startPoint.x +
+        (endPoint.x -
+          startPoint.x) *
+          endRatio;
+
+      const segmentEndY =
+        startPoint.y +
+        (endPoint.y -
+          startPoint.y) *
+          endRatio;
+
+      const segmentSpeed =
+        (segmentStartSpeed +
+          segmentEndSpeed) /
+        2;
+
+      const speedSegment =
+        document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line"
+        );
+
+      speedSegment.setAttribute(
+        "x1",
+        String(segmentStartX)
       );
 
-    gradientStop.setAttribute(
-  "offset",
-  `${Math.min(
-    100,
-    (stop.speed /
-      maxSpeed) *
-      100
-  )}%`
-);
+      speedSegment.setAttribute(
+        "y1",
+        String(segmentStartY)
+      );
 
-    gradientStop.setAttribute(
-      "stop-color",
-      stop.color
-    );
+      speedSegment.setAttribute(
+        "x2",
+        String(segmentEndX)
+      );
 
-    gradient.appendChild(
-      gradientStop
-    );
+      speedSegment.setAttribute(
+        "y2",
+        String(segmentEndY)
+      );
+
+      speedSegment.setAttribute(
+        "stroke",
+        getSpeedColor(
+          segmentSpeed
+        )
+      );
+
+      speedSegment.setAttribute(
+        "stroke-width",
+        "3"
+      );
+
+      speedSegment.setAttribute(
+        "stroke-linecap",
+        "round"
+      );
+
+      svg.appendChild(
+        speedSegment
+      );
+    }
   }
-);
-
-const defs =
-  document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "defs"
-  );
-
-defs.appendChild(
-  gradient
-);
-
-svg.appendChild(
-  defs
-);
-
-const speedPath =
-  document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "polyline"
-  );
-
-speedPath.setAttribute(
-  "points",
-  points
-    .map(
-      (point) =>
-        `${point.x},${point.y}`
-    )
-    .join(" ")
-);
-
-speedPath.setAttribute(
-  "fill",
-  "none"
-);
-
-speedPath.setAttribute(
-  "stroke",
-  `url(#speed-gradient-${drive.id})`
-);
-
-speedPath.setAttribute(
-  "stroke-width",
-  "3"
-);
-
-speedPath.setAttribute(
-  "stroke-linecap",
-  "round"
-);
-
-speedPath.setAttribute(
-  "stroke-linejoin",
-  "round"
-);
-
-svg.appendChild(
-  speedPath
-);
 
 
   /*
