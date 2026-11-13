@@ -474,18 +474,19 @@ let stoppedTime = 0;
 let lastTimeSample = null;
 let currentlyMoving = false;
 
-const MOVING_CONFIRMATION_THRESHOLD_KMH = 3;
-
-const MOVING_CONFIRMATIONS_REQUIRED = 3;
-const STOPPED_CONFIRMATIONS_REQUIRED = 3;
-
-const STATIONARY_DRIFT_METERS = 8;
+/* Low-speed movement detection with separate start/stop thresholds. */
+const MOVING_CONFIRMATION_THRESHOLD_KMH = 0.9;
+const STOPPED_CONFIRMATION_THRESHOLD_KMH = 0.5;
+const MOVING_CONFIRMATIONS_REQUIRED = 2;
+const STOPPED_CONFIRMATIONS_REQUIRED = 5;
+const DISTANCE_ACCUMULATION_THRESHOLD_KM = 0.003;
 const MAX_ACCEPTED_SPEED_KMH = 220;
 
 let movementConfirmations = 0;
 let stoppedConfirmations = 0;
 let filteredSpeed = 0;
 let recentSpeedSamples = [];
+let distanceAnchorPosition = null;
 
 /* =========================================================
    HOME MAP
@@ -1665,6 +1666,9 @@ selectedTransportation =
   lastPosition =
     null;
 
+  distanceAnchorPosition =
+    null;
+
   movingTime =
     0;
 
@@ -1823,6 +1827,10 @@ selectedTransportation =
 
             speed:
               location.speed,
+
+            // Optional native speed uncertainty (m/s), if exposed by the plugin.
+            speedAccuracy:
+              location.speedAccuracy,
           },
 
           timestamp:
@@ -2121,7 +2129,9 @@ function handlePosition(position) {
   if (!driving) return;
 
   const now =
-    Date.now();
+    Number(position.timestamp) > 0
+      ? Number(position.timestamp)
+      : Date.now();
 
   const latitude =
     position.coords.latitude;
@@ -2191,50 +2201,64 @@ function handlePosition(position) {
     ];
 
   /*
-   * Require several consecutive GPS readings
-   * before changing between stopped and moving.
+   * Separate start/stop thresholds prevent one weak or zero GPS fix
+   * from declaring the vehicle stationary. This is deliberately more
+   * sensitive to slow movement than the previous 3 km/h threshold.
    */
   if (
     medianSpeed >=
     MOVING_CONFIRMATION_THRESHOLD_KMH
   ) {
     movementConfirmations++;
-    stoppedConfirmations =
-      0;
-  } else {
+    stoppedConfirmations = 0;
+  } else if (
+    medianSpeed <=
+    STOPPED_CONFIRMATION_THRESHOLD_KMH
+  ) {
     stoppedConfirmations++;
-    movementConfirmations =
-      0;
-  }
-
-  if (
-    movementConfirmations >=
-    MOVING_CONFIRMATIONS_REQUIRED
-  ) {
-    currentlyMoving =
-      true;
-  }
-
-  if (
-    stoppedConfirmations >=
-    STOPPED_CONFIRMATIONS_REQUIRED
-  ) {
-    currentlyMoving =
-      false;
-  }
-
-  /*
-   * When the vehicle is considered stopped,
-   * force displayed speed to exactly 0.
-   */
-  if (
-    !currentlyMoving
-  ) {
-    filteredSpeed =
-      0;
+    movementConfirmations = 0;
   } else {
-    filteredSpeed =
-      medianSpeed;
+    movementConfirmations = 0;
+    stoppedConfirmations = 0;
+  }
+
+  if (
+    !currentlyMoving &&
+    movementConfirmations >= MOVING_CONFIRMATIONS_REQUIRED
+  ) {
+    currentlyMoving = true;
+    stoppedConfirmations = 0;
+    distanceAnchorPosition = {
+      latitude,
+      longitude,
+      timestamp: now,
+    };
+  }
+
+  if (
+    currentlyMoving &&
+    stoppedConfirmations >= STOPPED_CONFIRMATIONS_REQUIRED
+  ) {
+    currentlyMoving = false;
+    movementConfirmations = 0;
+    filteredSpeed = 0;
+    distanceAnchorPosition = {
+      latitude,
+      longitude,
+      timestamp: now,
+    };
+  }
+
+  /* Hold a decaying speed through brief zero-speed GPS glitches. */
+  if (!currentlyMoving) {
+    filteredSpeed = 0;
+  } else if (medianSpeed > STOPPED_CONFIRMATION_THRESHOLD_KMH) {
+    filteredSpeed = medianSpeed;
+  } else {
+    filteredSpeed = Math.max(
+      medianSpeed,
+      filteredSpeed * 0.75
+    );
   }
 
   const speed =
@@ -2253,6 +2277,10 @@ function handlePosition(position) {
     timestamp:
       now,
     accuracy,
+    ...(Number.isFinite(Number(position.coords.speedAccuracy)) &&
+    Number(position.coords.speedAccuracy) >= 0
+      ? { speedAccuracy: Number(position.coords.speedAccuracy) }
+      : {}),
   };
 
   updateMotionTime(
@@ -2261,54 +2289,53 @@ function handlePosition(position) {
   );
 
   /*
-   * Calculate distance only when movement has
-   * been positively confirmed.
-   *
-   * Very small GPS movements are ignored because
-   * they are usually GPS drift while stationary.
+   * Accumulate distance from a persistent anchor. The previous code
+   * discarded every individual segment shorter than 8 metres, which
+   * loses much of the distance at low speeds and on winding roads.
    */
-  if (
-    lastPosition &&
-    currentlyMoving
-  ) {
-    const distance =
-      calculateDistance(
-        lastPosition.latitude,
-        lastPosition.longitude,
-        latitude,
-        longitude
-      );
+  if (!currentlyMoving) {
+    distanceAnchorPosition = {
+      latitude,
+      longitude,
+      timestamp: now,
+    };
+  } else if (distanceAnchorPosition) {
+    const distance = calculateDistance(
+      distanceAnchorPosition.latitude,
+      distanceAnchorPosition.longitude,
+      latitude,
+      longitude
+    );
 
-    const timeDifference =
-      Math.max(
-        1,
-        now -
-          lastPosition.timestamp
-      );
+    const timeDifference = Math.max(
+      1,
+      now - (distanceAnchorPosition.timestamp || now)
+    );
 
-    const maximumReasonableDistance =
-      Math.max(
-        0.05,
-        (Math.max(
-          speed,
-          5
-        ) /
-          3600) *
-          (timeDifference /
-            1000) *
-          3
-      );
+    const maximumReasonableDistance = Math.max(
+      0.05,
+      (Math.max(speed, 5) / 3600) *
+        (timeDifference / 1000) *
+        3
+    );
 
     if (
-      distance >=
-        STATIONARY_DRIFT_METERS /
-          1000 &&
-      distance <=
-        maximumReasonableDistance
+      distance >= DISTANCE_ACCUMULATION_THRESHOLD_KM &&
+      distance <= maximumReasonableDistance
     ) {
-      totalDistance +=
-        distance;
+      totalDistance += distance;
+      distanceAnchorPosition = {
+        latitude,
+        longitude,
+        timestamp: now,
+      };
     }
+  } else {
+    distanceAnchorPosition = {
+      latitude,
+      longitude,
+      timestamp: now,
+    };
   }
 
   /*
@@ -2683,6 +2710,9 @@ async function stopDrive() {
 
   recentSpeedSamples =
     [];
+
+  distanceAnchorPosition =
+    null;
 
   lastPosition =
     null;
