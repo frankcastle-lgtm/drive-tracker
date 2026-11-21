@@ -224,6 +224,20 @@ document.querySelector("#app").innerHTML = `
             </span>
           </div>
 
+          <div style="margin: 0 0 14px;">
+            <button
+              type="button"
+              id="recalculatePreviousTripsButton"
+              class="transportation-choice"
+              style="width: 100%; justify-content: center;"
+            >
+              Recalculate Previous Trips
+            </button>
+            <p style="margin: 8px 2px 0; color: #a1a1a6; font-size: 12px; line-height: 1.45;">
+              One-time recalculation for drives recorded before November 11, 2026.
+            </p>
+          </div>
+
           <div
             id="history"
             class="history-empty"
@@ -402,7 +416,7 @@ highestSpeedDisplay.addEventListener(
     if (
       matchingDrives.length === 1
     ) {
-      toggleHistoryDrive(
+      openHistoryDriveAndScroll(
         matchingDrives[0].id
       );
 
@@ -426,6 +440,16 @@ const driveCount =
   document.querySelector(
     "#driveCount"
   );
+
+const recalculatePreviousTripsButton =
+  document.querySelector(
+    "#recalculatePreviousTripsButton"
+  );
+
+recalculatePreviousTripsButton.addEventListener(
+  "click",
+  recalculatePreviousTrips
+);
 
   const historyList =
   document.querySelector(
@@ -3148,6 +3172,201 @@ async function updateHistoryLocations() {
 }
 
 /* =========================================================
+   ONE-TIME HISTORICAL DRIVE RECALCULATION
+   ========================================================= */
+
+const HISTORICAL_RECALCULATION_VERSION = 1;
+// Uses the device's local timezone: midnight at the start of Nov 11, 2026.
+const HISTORICAL_RECALCULATION_CUTOFF =
+  new Date(2026, 10, 11, 0, 0, 0, 0).getTime();
+
+function recalculateDriveFromRoute(drive) {
+  const route = Array.isArray(drive.route) ? drive.route : [];
+  if (route.length < 2) return null;
+
+  const validPoints = route.filter((point) => {
+    const lat = Number(point?.latitude);
+    const lon = Number(point?.longitude);
+    const timestamp = Number(point?.timestamp);
+    const accuracy = Number(point?.accuracy);
+
+    return Number.isFinite(lat) &&
+      Number.isFinite(lon) &&
+      Math.abs(lat) <= 90 &&
+      Math.abs(lon) <= 180 &&
+      Number.isFinite(timestamp) &&
+      timestamp > 0 &&
+      (!Number.isFinite(accuracy) || accuracy <= 50);
+  }).sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+
+  if (validPoints.length < 2) return null;
+
+  let distanceKm = 0;
+  let movingTimeMs = 0;
+  let stoppedTimeMs = 0;
+  let topSpeedKmh = 0;
+  let acceptedSegments = 0;
+
+  for (let i = 1; i < validPoints.length; i++) {
+    const previous = validPoints[i - 1];
+    const current = validPoints[i];
+    const elapsedMs = Number(current.timestamp) - Number(previous.timestamp);
+
+    // Large gaps cannot be reliably interpolated.
+    if (elapsedMs <= 0 || elapsedMs > 30000) continue;
+
+    const segmentKm = calculateDistance(
+      Number(previous.latitude),
+      Number(previous.longitude),
+      Number(current.latitude),
+      Number(current.longitude)
+    );
+    const segmentSpeedKmh = segmentKm / (elapsedMs / 3600000);
+    const recordedSpeed = Number(current.speed);
+
+    // Ignore GPS jumps and very small position drift.
+    if (!Number.isFinite(segmentSpeedKmh) ||
+        segmentSpeedKmh > 180 ||
+        segmentKm < 0.003) {
+      if (Number.isFinite(recordedSpeed) &&
+          recordedSpeed > topSpeedKmh &&
+          recordedSpeed <= 180) {
+        topSpeedKmh = recordedSpeed;
+      }
+      continue;
+    }
+
+    distanceKm += segmentKm;
+    acceptedSegments++;
+
+    const effectiveSpeed = Number.isFinite(recordedSpeed)
+      ? Math.max(0, Math.min(recordedSpeed, 180))
+      : segmentSpeedKmh;
+
+    if (effectiveSpeed >= 0.9) {
+      movingTimeMs += elapsedMs;
+    } else {
+      stoppedTimeMs += elapsedMs;
+    }
+
+    topSpeedKmh = Math.max(topSpeedKmh, effectiveSpeed, segmentSpeedKmh);
+  }
+
+  if (acceptedSegments === 0 || distanceKm <= 0) return null;
+
+  const start = Number(drive.startTime);
+  const end = Number(drive.endTime);
+  const durationMs = Number.isFinite(start) &&
+    Number.isFinite(end) &&
+    end > start
+      ? end - start
+      : movingTimeMs + stoppedTimeMs;
+
+  const classifiedTime = movingTimeMs + stoppedTimeMs;
+  if (durationMs > classifiedTime) {
+    stoppedTimeMs += durationMs - classifiedTime;
+  }
+
+  return {
+    distance: distanceKm,
+    topSpeed: topSpeedKmh,
+    averageSpeed: durationMs > 0
+      ? distanceKm / (durationMs / 3600000)
+      : 0,
+    movingTime: movingTimeMs,
+    stoppedTime: stoppedTimeMs,
+    duration: durationMs,
+  };
+}
+
+async function recalculatePreviousTrips() {
+  const button = recalculatePreviousTripsButton;
+  const alreadyDone = Number(
+    localStorage.getItem("driveHistoryRecalculationVersion") || 0
+  ) >= HISTORICAL_RECALCULATION_VERSION;
+
+  if (alreadyDone) {
+    alert("The one-time recalculation has already been completed on this device.");
+    button.disabled = true;
+    button.textContent = "Previous Trips Recalculated";
+    return;
+  }
+
+  const eligibleDrives = getSavedDrives().filter((drive) => {
+    const start = Number(drive.startTime);
+    return Number.isFinite(start) &&
+      start < HISTORICAL_RECALCULATION_CUTOFF &&
+      !drive.historicalRecalculationVersion;
+  });
+
+  if (eligibleDrives.length === 0) {
+    alert("There are no eligible trips recorded before November 11, 2026.");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Recalculate ${eligibleDrives.length} previous ${eligibleDrives.length === 1 ? "trip" : "trips"}?\n\n` +
+    "Original statistics will be backed up in each trip. Trips recorded on or after November 11, 2026 will not be changed. This action can only be run once."
+  );
+  if (!confirmed) return;
+
+  button.disabled = true;
+  button.textContent = "Recalculating…";
+
+  try {
+    let updated = 0;
+    let skipped = 0;
+
+    for (const drive of eligibleDrives) {
+      const recalculated = recalculateDriveFromRoute(drive);
+      if (!recalculated) {
+        skipped++;
+        continue;
+      }
+
+      if (!drive.originalStatsBeforeRecalculation) {
+        drive.originalStatsBeforeRecalculation = {
+          distance: drive.distance,
+          topSpeed: drive.topSpeed,
+          averageSpeed: drive.averageSpeed,
+          movingTime: drive.movingTime,
+          stoppedTime: drive.stoppedTime,
+          duration: drive.duration,
+        };
+      }
+
+      Object.assign(drive, recalculated, {
+        historicalRecalculationVersion: HISTORICAL_RECALCULATION_VERSION,
+        historicalRecalculatedAt: Date.now(),
+      });
+
+      await saveDriveToDatabase(drive);
+      updated++;
+    }
+
+    localStorage.setItem("driveHistory", JSON.stringify(getSavedDrives()));
+    localStorage.setItem(
+      "driveHistoryRecalculationVersion",
+      String(HISTORICAL_RECALCULATION_VERSION)
+    );
+
+    savedDrivesCache.sort((a, b) => Number(b.startTime) - Number(a.startTime));
+    renderHistory();
+    updateOverallStats();
+
+    button.textContent = "Previous Trips Recalculated";
+    alert(
+      `Recalculation complete.\n\nUpdated: ${updated}\nSkipped (insufficient usable GPS data): ${skipped}\n\nOriginal statistics were backed up for every updated trip.`
+    );
+  } catch (error) {
+    console.error("Historical drive recalculation failed:", error);
+    button.disabled = false;
+    button.textContent = "Recalculate Previous Trips";
+    alert("The recalculation could not be completed. Please check the app and try again.");
+  }
+}
+
+/* =========================================================
    RENDER DRIVE HISTORY
    ========================================================= */
 
@@ -3826,7 +4045,7 @@ function showHighestSpeedDrivePicker(
 
             closeModal();
 
-            toggleHistoryDrive(
+            openHistoryDriveAndScroll(
               driveId
             );
           }
@@ -3885,6 +4104,47 @@ function escapeHtml(
       /'/g,
       "&#039;"
     );
+}
+
+/* =========================================================
+   OPEN HIGHEST-SPEED DRIVE AND SCROLL TO IT
+   ========================================================= */
+
+function openHistoryDriveAndScroll(driveId) {
+  const drives = getSavedDrives();
+
+  const drive = drives.find(
+    (item) =>
+      String(item.id) === String(driveId)
+  );
+
+  if (!drive) {
+    return;
+  }
+
+  // Switch to the Drives tab before rendering and scrolling.
+  activateTab("drives");
+
+  // Always open the selected trip, even if another trip was open.
+  selectedDriveId = drive.id;
+  renderHistory();
+
+  // Wait for the expanded trip card to be laid out before scrolling.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const selectedItem =
+        historyElement.querySelector(
+          `[data-drive-id="${CSS.escape(String(drive.id))}"]`
+        );
+
+      if (selectedItem) {
+        selectedItem.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    });
+  });
 }
 
 /* =========================================================
